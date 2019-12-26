@@ -1,13 +1,11 @@
-/* eslint-disable */
-
-/***********/
-/* Init    */
-/***********/
 const low = require("lowdb");
 const FileSync = require("lowdb/adapters/FileSync");
 
-const adapter = new FileSync("db.json");
-const db = low(adapter);
+const levelstoryAdapter = new FileSync("level-story.json");
+const levelstory = low(levelstoryAdapter);
+
+const leveluserAdapter = new FileSync("level-user.json");
+const leveluser = low(leveluserAdapter);
 
 const express = require("express");
 const cors = require("cors");
@@ -21,24 +19,22 @@ server.use(cors({ origin: whitelist, credentials: true }));
 const port = 8000;
 const host = process.env.HOST;
 
-/***********/
-/* Routes  */
-/***********/
-server.get("/db", (req, res) => {
-  res.json(db);
-});
-
-server.get("/levels", (req, res) => {
-  const data = db.get("levels").value();
+server.get("/level-story", (req, res) => {
+  const data = levelstory.value();
   res.json({ payload: data });
 });
 
-server.post("/levels", jsonParser, (req, res) => {
+server.get("/level-user", (req, res) => {
+  const data = leveluser.value();
+  res.json({ payload: data });
+});
+
+server.post("/level-user", jsonParser, (req, res) => {
   const level = req.body;
-  const data = db.get("levels").value() || [];
+  const data = leveluser.value() || [];
 
   const newData = data.concat(level);
-  const d = db.set("levels", newData).write();
+  const d = leveluser.set(newData).write();
 
   res.json(d);
 });
