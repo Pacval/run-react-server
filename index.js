@@ -1,11 +1,11 @@
 const low = require("lowdb");
 const FileSync = require("lowdb/adapters/FileSync");
 
-const levelstoryAdapter = new FileSync("./tables/story-levels.json");
-const levelstory = low(levelstoryAdapter);
+const storyLevelAdapter = new FileSync("./tables/story-levels.json");
+const storyLevel = low(storyLevelAdapter);
 
-const leveluserAdapter = new FileSync("./tables/community-levels.json");
-const leveluser = low(leveluserAdapter);
+const communityLevelAdapter = new FileSync("./tables/community-levels.json");
+const communityLevel = low(communityLevelAdapter);
 
 const express = require("express");
 const cors = require("cors");
@@ -20,21 +20,21 @@ const port = 8000;
 const host = process.env.HOST;
 
 server.get("/story-level", (req, res) => {
-  const data = levelstory.value();
+  const data = storyLevel.get("levels").value();
   res.json({ payload: data });
 });
 
 server.get("/community-level", (req, res) => {
-  const data = leveluser.value();
+  const data = communityLevel.get("levels").value();
   res.json({ payload: data });
 });
 
 server.post("/community-level", jsonParser, (req, res) => {
   const level = req.body;
-  const data = leveluser.value() || [];
+  const data = communityLevel.get("levels").value() || [];
 
   const newData = data.concat(level);
-  const d = leveluser.set(newData).write();
+  const d = communityLevel.set("levels", newData).write();
 
   res.json(d);
 });

@@ -1,90 +1,92 @@
-[
-  {
-    "id": 1,
-    "number": 1,
-    "content": {
-      "dimensions": {
-        "row": 4,
-        "col": 4
-      },
-      "player": {
-        "y": 0,
-        "x": 0
-      },
-      "exit": {
-        "y": 0,
-        "x": 3
-      },
-      "enemies": [
-        {
-          "y": 3,
-          "x": 0
-        }
-      ],
-      "obstacles": [
-        {
-          "y": 2,
-          "x": 0
+{
+  "levels": [
+    {
+      "id": 1,
+      "number": 1,
+      "content": {
+        "dimensions": {
+          "row": 4,
+          "col": 4
         },
-        {
-          "y": 2,
-          "x": 1
-        },
-        {
-          "y": 2,
-          "x": 2
-        }
-      ],
-      "torches": [
-        {
+        "player": {
           "y": 0,
-          "x": 1
-        }
-      ]
-    }
-  },
-  {
-    "id": 2,
-    "number": 2,
-    "content": {
-      "dimensions": {
-        "row": 4,
-        "col": 4
-      },
-      "player": {
-        "y": 0,
-        "x": 3
-      },
-      "exit": {
-        "y": 0,
-        "x": 0
-      },
-      "enemies": [
-        {
-          "y": 3,
-          "x": 0
-        }
-      ],
-      "obstacles": [
-        {
-          "y": 2,
           "x": 0
         },
-        {
-          "y": 2,
-          "x": 1
-        },
-        {
-          "y": 2,
-          "x": 2
-        }
-      ],
-      "torches": [
-        {
+        "exit": {
           "y": 0,
-          "x": 1
-        }
-      ]
+          "x": 3
+        },
+        "enemies": [
+          {
+            "y": 3,
+            "x": 0
+          }
+        ],
+        "obstacles": [
+          {
+            "y": 2,
+            "x": 0
+          },
+          {
+            "y": 2,
+            "x": 1
+          },
+          {
+            "y": 2,
+            "x": 2
+          }
+        ],
+        "torches": [
+          {
+            "y": 0,
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "number": 2,
+      "content": {
+        "dimensions": {
+          "row": 4,
+          "col": 4
+        },
+        "player": {
+          "y": 0,
+          "x": 3
+        },
+        "exit": {
+          "y": 0,
+          "x": 0
+        },
+        "enemies": [
+          {
+            "y": 3,
+            "x": 0
+          }
+        ],
+        "obstacles": [
+          {
+            "y": 2,
+            "x": 0
+          },
+          {
+            "y": 2,
+            "x": 1
+          },
+          {
+            "y": 2,
+            "x": 2
+          }
+        ],
+        "torches": [
+          {
+            "y": 0,
+            "x": 1
+          }
+        ]
+      }
     }
-  }
-]
+  ]
+}
