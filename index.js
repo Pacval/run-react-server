@@ -108,7 +108,7 @@ app.post("/authenticate", jsonParser, (req, res) => {
       return;
     }
     if (!row) {
-      res.status(404).json({ message: "no user found" });
+      res.status(404).json({ message: "Utilisateur non trouvé" });
     } else {
       // user trouvé
       if (bcrypt.compareSync(password, row.password)) {
@@ -119,7 +119,7 @@ app.post("/authenticate", jsonParser, (req, res) => {
         });
       } else {
         // mauvais mdp
-        res.status(400).json({ message: "wrong password" });
+        res.status(400).json({ message: "Mot de passe incorrect" });
       }
     }
   });
