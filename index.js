@@ -3,6 +3,7 @@ const sqlite3 = require("sqlite3").verbose();
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const exitHook = require("exit-hook");
+const bcrypt = require("bcryptjs");
 
 const app = express();
 const jsonParser = bodyParser.json();
@@ -11,8 +12,8 @@ app.use(cors({ origin: whitelist, credentials: true }));
 
 // listen on server
 const server = app.listen(8000, () => {
-  var host = server.address().address;
-  var port = server.address().port;
+  const host = server.address().address;
+  const port = server.address().port;
   console.log("Server is running on http://" + host + ":" + port);
 });
 
@@ -59,6 +60,8 @@ app.get("/community-level", (req, res) => {
   });
 });
 
+// post new community level
+// params : name / creator / content
 app.post("/community-level", jsonParser, (req, res) => {
   const sql =
     "INSERT INTO community_level (name, creator, content) VALUES (?,?,?)";
@@ -69,25 +72,57 @@ app.post("/community-level", jsonParser, (req, res) => {
       res.status(400).json({ error: err.message });
       return;
     }
-    res.json(params);
+    res.json();
   });
 });
 
+// new user
+// params : username / password
 app.post("/user", jsonParser, (req, res) => {
-  // const user = req.body;
-  // const data = userTable.get("users").value() || [];
-  // const newData = data.concat(user);
-  // const d = userTable.set("users", newData).write();
-  // res.json(d);
+  const sql =
+    "INSERT INTO user (username, password, pseudo, date_creation) VALUES (?,?,?,?)";
+
+  const salt = bcrypt.genSaltSync(10);
+  const hashPwd = bcrypt.hashSync(req.body.password, salt);
+  const params = [req.body.username, hashPwd, req.body.username, Date.now()];
+
+  db.run(sql, params, (err, result) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json({ pseudo: req.body.pseudo });
+  });
 });
 
+// authentication
+// params : username / password
 app.post("/authenticate", jsonParser, (req, res) => {
-  // const user = req.body;
-  // const data = userTable.get("users").value() || [];
-  // const d = data.find(
-  //   u => u.username === user.username && u.password === user.password
-  // );
-  // res.json({ payload: !!d ? d.username : null });
+  const sql = "SELECT * FROM user WHERE username = ?";
+  const params = [req.body.username];
+  const password = req.body.password;
+
+  db.get(sql, params, (err, row) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    if (!row) {
+      res.status(404).json({ message: "no user found" });
+    } else {
+      // user trouvé
+      if (bcrypt.compareSync(password, row.password)) {
+        // mdp ok
+        res.json({
+          pseudo: row.pseudo,
+          date_creation: row.date_creation
+        });
+      } else {
+        // mauvais mdp
+        res.status(400).json({ message: "wrong password" });
+      }
+    }
+  });
 });
 
 /* 404 */
