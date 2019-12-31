@@ -1,77 +1,96 @@
-const low = require("lowdb");
-const FileSync = require("lowdb/adapters/FileSync");
-
-const storyLevelAdapter = new FileSync("./tables/story-levels.json");
-const storyLevelTable = low(storyLevelAdapter);
-
-const communityLevelAdapter = new FileSync("./tables/community-levels.json");
-const communityLevelTable = low(communityLevelAdapter);
-
-const userAdapter = new FileSync("./tables/users.json");
-const userTable = low(userAdapter);
-
 const express = require("express");
+const sqlite3 = require("sqlite3").verbose();
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const exitHook = require("exit-hook");
 
-const server = express();
+const app = express();
 const jsonParser = bodyParser.json();
 const whitelist = ["http://localhost:3000"];
-server.use(cors({ origin: whitelist, credentials: true }));
+app.use(cors({ origin: whitelist, credentials: true }));
 
-const port = 8000;
-const host = process.env.HOST;
-
-server.get("/story-level", (req, res) => {
-  const data = storyLevelTable.get("levels").value();
-  res.json({ payload: data });
+// listen on server
+const server = app.listen(8000, () => {
+  var host = server.address().address;
+  var port = server.address().port;
+  console.log("Server is running on http://" + host + ":" + port);
 });
 
-server.get("/community-level", (req, res) => {
-  const data = communityLevelTable.get("levels").value();
-  res.json({ payload: data });
+// open database file
+let db = new sqlite3.Database("./runDB.db", sqlite3.OPEN_READWRITE, err => {
+  if (err) {
+    return console.error(err.message);
+  }
+  console.log("Connected to the Run SQlite database.");
 });
 
-server.post("/community-level", jsonParser, (req, res) => {
-  const level = req.body;
-  const data = communityLevelTable.get("levels").value() || [];
-
-  const newData = data.concat(level);
-  const d = communityLevelTable.set("levels", newData).write();
-
-  res.json(d);
+// Close database and server connection when any shut down is called
+exitHook(() => {
+  db.close(err => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log("Close the database connection.");
+  });
+  server.close();
 });
 
-server.get("/user", (req, res) => {
-  const data = userTable.get("users").value();
-  res.json({ payload: data });
+/* ---------- API ---------- */
+
+// get all story levels
+app.get("/story-level", (req, res) => {
+  const sql = "SELECT * FROM story_level";
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      throw err;
+    }
+    res.json({ payload: rows });
+  });
 });
 
-server.post("/user", jsonParser, (req, res) => {
-  const user = req.body;
-  const data = userTable.get("users").value() || [];
-
-  const newData = data.concat(user);
-  const d = userTable.set("users", newData).write();
-
-  res.json(d);
+// get all community levels
+app.get("/community-level", (req, res) => {
+  const sql = "SELECT * FROM community_level";
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      throw err;
+    }
+    res.json({ payload: rows });
+  });
 });
 
-server.post("/authenticate", jsonParser, (req, res) => {
-  const user = req.body;
-  const data = userTable.get("users").value() || [];
+app.post("/community-level", jsonParser, (req, res) => {
+  const sql =
+    "INSERT INTO community_level (name, creator, content) VALUES (?,?,?)";
+  const params = [req.body.name, req.body.creator, req.body.content];
 
-  const d = data.find(
-    u => u.username === user.username && u.password === user.password
-  );
-  res.json({ payload: !!d ? d.username : null });
+  db.run(sql, params, (err, result) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json(params);
+  });
+});
+
+app.post("/user", jsonParser, (req, res) => {
+  // const user = req.body;
+  // const data = userTable.get("users").value() || [];
+  // const newData = data.concat(user);
+  // const d = userTable.set("users", newData).write();
+  // res.json(d);
+});
+
+app.post("/authenticate", jsonParser, (req, res) => {
+  // const user = req.body;
+  // const data = userTable.get("users").value() || [];
+  // const d = data.find(
+  //   u => u.username === user.username && u.password === user.password
+  // );
+  // res.json({ payload: !!d ? d.username : null });
 });
 
 /* 404 */
-server.get("*", (req, res) => {
+app.get("*", (req, res) => {
   res.status(404);
-});
-
-server.listen(port, host, err => {
-  console.log("Server is running on http://" + host + ":" + port);
 });
