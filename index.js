@@ -4,6 +4,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const exitHook = require("exit-hook");
 const bcrypt = require("bcryptjs");
+const moment = require("moment");
 
 const app = express();
 const jsonParser = bodyParser.json();
@@ -84,14 +85,19 @@ app.post("/user", jsonParser, (req, res) => {
 
   const salt = bcrypt.genSaltSync(10);
   const hashPwd = bcrypt.hashSync(req.body.password, salt);
-  const params = [req.body.username, hashPwd, req.body.username, Date.now()];
+  const dateNow = moment().format("DD-MM-YYYY");
+  const params = [req.body.username, hashPwd, req.body.username, dateNow];
+  const response = {
+    pseudo: req.body.username,
+    date_creation: dateNow
+  };
 
   db.run(sql, params, (err, result) => {
     if (err) {
       res.status(400).json({ error: err.message });
       return;
     }
-    res.json({ pseudo: req.body.pseudo });
+    res.json({ payload: response });
   });
 });
 
@@ -108,14 +114,16 @@ app.post("/authenticate", jsonParser, (req, res) => {
       return;
     }
     if (!row) {
-      res.status(404).json({ message: "Utilisateur non trouvé" });
+      res.status(404).json({ message: "Cet utilisateur n'existe pas" });
     } else {
       // user trouvé
       if (bcrypt.compareSync(password, row.password)) {
         // mdp ok
         res.json({
-          pseudo: row.pseudo,
-          date_creation: row.date_creation
+          payload: {
+            pseudo: row.pseudo,
+            date_creation: row.date_creation
+          }
         });
       } else {
         // mauvais mdp
