@@ -8,8 +8,7 @@ const moment = require("moment");
 
 const app = express();
 const jsonParser = bodyParser.json();
-const whitelist = ["http://localhost:3000"];
-app.use(cors({ origin: whitelist, credentials: true }));
+app.use(cors({ origin: "*" })); // a modifier plus tard si jamais on met tout ça sur un serveur
 
 // listen on server
 const server = app.listen(8000, () => {
@@ -47,6 +46,39 @@ app.get("/story-level", (req, res) => {
       throw err;
     }
     res.json({ payload: rows });
+  });
+});
+
+// get all progress story levels
+// params : userId
+app.get("/user-progress-story/:userId", (req, res) => {
+  const sql = "SELECT * FROM user_progress_story WHERE user_id = ?";
+  const params = [req.params.userId];
+  db.all(sql, params, (err, rows) => {
+    if (err) {
+      throw err;
+    }
+    res.json({
+      payload: rows.map(row => ({
+        id: row.level_id,
+        score: row.score
+      }))
+    });
+  });
+});
+
+// post user complete story level
+// params : userId, storyLevelId, score
+app.post("/user-progress-story", jsonParser, (req, res) => {
+  const sql = "INSERT INTO user_progress_story VALUES (?,?,?)";
+  const params = [req.body.userId, req.body.storyLevelId, req.body.score];
+
+  db.run(sql, params, (err, result) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json();
   });
 });
 
@@ -121,6 +153,7 @@ app.post("/authenticate", jsonParser, (req, res) => {
         // mdp ok
         res.json({
           payload: {
+            id: row.id,
             pseudo: row.pseudo,
             date_creation: row.date_creation
           }
