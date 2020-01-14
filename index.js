@@ -38,6 +38,8 @@ exitHook(() => {
 
 /* ---------- API ---------- */
 
+/* ---------- STORY LEVEL ---------- */
+
 // get all story levels
 app.get("/story-level", (req, res) => {
   const sql = "SELECT * FROM story_level";
@@ -48,6 +50,8 @@ app.get("/story-level", (req, res) => {
     res.json({ payload: rows });
   });
 });
+
+/* ---------- USER PROGRESS STORY ---------- */
 
 // get all progress story levels
 // params : userId
@@ -82,6 +86,8 @@ app.post("/user-progress-story", jsonParser, (req, res) => {
   });
 });
 
+/* ---------- COMMUNITY LEVEL ---------- */
+
 // get all community levels
 app.get("/community-level", (req, res) => {
   const sql = "SELECT * FROM community_level";
@@ -108,6 +114,43 @@ app.post("/community-level", jsonParser, (req, res) => {
     res.json();
   });
 });
+
+/* ---------- USER PROGRESS COMMUNITY ---------- */
+
+// get all progress community levels
+// params : userId
+app.get("/user-progress-community/:userId", (req, res) => {
+  const sql = "SELECT * FROM user_progress_community WHERE user_id = ?";
+  const params = [req.params.userId];
+  db.all(sql, params, (err, rows) => {
+    if (err) {
+      throw err;
+    }
+    res.json({
+      payload: rows.map(row => ({
+        id: row.level_id,
+        score: row.score
+      }))
+    });
+  });
+});
+
+// post user complete community level
+// params : userId, communityLevelId, score
+app.post("/user-progress-story", jsonParser, (req, res) => {
+  const sql = "INSERT INTO user_progress_community VALUES (?,?,?)";
+  const params = [req.body.userId, req.body.communityLevelId, req.body.score];
+
+  db.run(sql, params, (err, result) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json();
+  });
+});
+
+/* ---------- USER ---------- */
 
 // new user
 // params : username / password
