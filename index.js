@@ -137,7 +137,7 @@ app.get("/user-progress-community/:userId", (req, res) => {
 
 // post user complete community level
 // params : userId, communityLevelId, score
-app.post("/user-progress-story", jsonParser, (req, res) => {
+app.post("/user-progress-community", jsonParser, (req, res) => {
   const sql = "INSERT INTO user_progress_community VALUES (?,?,?)";
   const params = [req.body.userId, req.body.communityLevelId, req.body.score];
 
